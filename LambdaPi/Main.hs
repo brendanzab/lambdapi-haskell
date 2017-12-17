@@ -10,83 +10,83 @@ import LambdaPi.Quote
 import LambdaPi.Parser
 import LambdaPi.Printer
 
-lpte :: Ctx Value_
-lpte =      [(Global "Zero", VNat_),
-             (Global "Succ", VPi_ VNat_ (\ _ -> VNat_)),
-             (Global "Nat", VStar_),
-             (Global "natElim", VPi_ (VPi_ VNat_ (\ _ -> VStar_)) (\ m ->
-                               VPi_ (m `vapp_` VZero_) (\ _ ->
-                               VPi_ (VPi_ VNat_ (\ k -> VPi_ (m `vapp_` k) (\ _ -> (m `vapp_` (VSucc_ k))))) ( \ _ ->
-                               VPi_ VNat_ (\ n -> m `vapp_` n))))),
-             (Global "Nil", VPi_ VStar_ (\ a -> VVec_ a VZero_)),
-             (Global "Cons", VPi_ VStar_ (\ a ->
-                            VPi_ VNat_ (\ n ->
-                            VPi_ a (\ _ -> VPi_ (VVec_ a n) (\ _ -> VVec_ a (VSucc_ n)))))),
-             (Global "Vec", VPi_ VStar_ (\ _ -> VPi_ VNat_ (\ _ -> VStar_))),
-             (Global "vecElim", VPi_ VStar_ (\ a ->
-                               VPi_ (VPi_ VNat_ (\ n -> VPi_ (VVec_ a n) (\ _ -> VStar_))) (\ m ->
-                               VPi_ (m `vapp_` VZero_ `vapp_` (VNil_ a)) (\ _ ->
-                               VPi_ (VPi_ VNat_ (\ n ->
-                                     VPi_ a (\ x ->
-                                     VPi_ (VVec_ a n) (\ xs ->
-                                     VPi_ (m `vapp_` n `vapp_` xs) (\ _ ->
-                                     m `vapp_` VSucc_ n `vapp_` VCons_ a n x xs))))) (\ _ ->
-                               VPi_ VNat_ (\ n ->
-                               VPi_ (VVec_ a n) (\ xs -> m `vapp_` n `vapp_` xs))))))),
-             (Global "Refl", VPi_ VStar_ (\ a -> VPi_ a (\ x ->
-                            VEq_ a x x))),
-             (Global "Eq", VPi_ VStar_ (\ a -> VPi_ a (\ x -> VPi_ a (\ y -> VStar_)))),
-             (Global "eqElim", VPi_ VStar_ (\ a ->
-                              VPi_ (VPi_ a (\ x -> VPi_ a (\ y -> VPi_ (VEq_ a x y) (\ _ -> VStar_)))) (\ m ->
-                              VPi_ (VPi_ a (\ x -> ((m `vapp_` x) `vapp_` x) `vapp_` VRefl_ a x)) (\ _ ->
-                              VPi_ a (\ x -> VPi_ a (\ y ->
-                              VPi_ (VEq_ a x y) (\ eq ->
-                              ((m `vapp_` x) `vapp_` y) `vapp_` eq))))))),
-             (Global "FZero", VPi_ VNat_ (\ n -> VFin_ (VSucc_ n))),
-             (Global "FSucc", VPi_ VNat_ (\ n -> VPi_ (VFin_ n) (\ f ->
-                             VFin_ (VSucc_ n)))),
-             (Global "Fin", VPi_ VNat_ (\ n -> VStar_)),
-             (Global "finElim", VPi_ (VPi_ VNat_ (\ n -> VPi_ (VFin_ n) (\ _ -> VStar_))) (\ m ->
-                               VPi_ (VPi_ VNat_ (\ n -> m `vapp_` (VSucc_ n) `vapp_` (VFZero_ n))) (\ _ ->
-                               VPi_ (VPi_ VNat_ (\ n -> VPi_ (VFin_ n) (\ f -> VPi_ (m `vapp_` n `vapp_` f) (\ _ -> m `vapp_` (VSucc_ n) `vapp_` (VFSucc_ n f))))) (\ _ ->
-                               VPi_ VNat_ (\ n -> VPi_ (VFin_ n) (\ f ->
-                               m `vapp_` n `vapp_` f))))))]
+lpte :: Ctx Value
+lpte =      [(Global "Zero", VNat),
+             (Global "Succ", VPi VNat (\ _ -> VNat)),
+             (Global "Nat", VStar),
+             (Global "natElim", VPi (VPi VNat (\ _ -> VStar)) (\ m ->
+                               VPi (m `vapp` VZero) (\ _ ->
+                               VPi (VPi VNat (\ k -> VPi (m `vapp` k) (\ _ -> (m `vapp` (VSucc k))))) ( \ _ ->
+                               VPi VNat (\ n -> m `vapp` n))))),
+             (Global "Nil", VPi VStar (\ a -> VVec a VZero)),
+             (Global "Cons", VPi VStar (\ a ->
+                            VPi VNat (\ n ->
+                            VPi a (\ _ -> VPi (VVec a n) (\ _ -> VVec a (VSucc n)))))),
+             (Global "Vec", VPi VStar (\ _ -> VPi VNat (\ _ -> VStar))),
+             (Global "vecElim", VPi VStar (\ a ->
+                               VPi (VPi VNat (\ n -> VPi (VVec a n) (\ _ -> VStar))) (\ m ->
+                               VPi (m `vapp` VZero `vapp` (VNil a)) (\ _ ->
+                               VPi (VPi VNat (\ n ->
+                                     VPi a (\ x ->
+                                     VPi (VVec a n) (\ xs ->
+                                     VPi (m `vapp` n `vapp` xs) (\ _ ->
+                                     m `vapp` VSucc n `vapp` VCons a n x xs))))) (\ _ ->
+                               VPi VNat (\ n ->
+                               VPi (VVec a n) (\ xs -> m `vapp` n `vapp` xs))))))),
+             (Global "Refl", VPi VStar (\ a -> VPi a (\ x ->
+                            VEq a x x))),
+             (Global "Eq", VPi VStar (\ a -> VPi a (\ x -> VPi a (\ y -> VStar)))),
+             (Global "eqElim", VPi VStar (\ a ->
+                              VPi (VPi a (\ x -> VPi a (\ y -> VPi (VEq a x y) (\ _ -> VStar)))) (\ m ->
+                              VPi (VPi a (\ x -> ((m `vapp` x) `vapp` x) `vapp` VRefl a x)) (\ _ ->
+                              VPi a (\ x -> VPi a (\ y ->
+                              VPi (VEq a x y) (\ eq ->
+                              ((m `vapp` x) `vapp` y) `vapp` eq))))))),
+             (Global "FZero", VPi VNat (\ n -> VFin (VSucc n))),
+             (Global "FSucc", VPi VNat (\ n -> VPi (VFin n) (\ f ->
+                             VFin (VSucc n)))),
+             (Global "Fin", VPi VNat (\ n -> VStar)),
+             (Global "finElim", VPi (VPi VNat (\ n -> VPi (VFin n) (\ _ -> VStar))) (\ m ->
+                               VPi (VPi VNat (\ n -> m `vapp` (VSucc n) `vapp` (VFZero n))) (\ _ ->
+                               VPi (VPi VNat (\ n -> VPi (VFin n) (\ f -> VPi (m `vapp` n `vapp` f) (\ _ -> m `vapp` (VSucc n) `vapp` (VFSucc n f))))) (\ _ ->
+                               VPi VNat (\ n -> VPi (VFin n) (\ f ->
+                               m `vapp` n `vapp` f))))))]
 
-lpve :: Ctx Value_
-lpve =      [(Global "Zero", VZero_),
-             (Global "Succ", VLam_ (\ n -> VSucc_ n)),
-             (Global "Nat", VNat_),
-             (Global "natElim", cEval_ (Lam_ (Lam_ (Lam_ (Lam_ (Inf_ (NatElim_ (Inf_ (Bound_ 3)) (Inf_ (Bound_ 2)) (Inf_ (Bound_ 1)) (Inf_ (Bound_ 0)))))))) ([], [])),
-             (Global "Nil", VLam_ (\ a -> VNil_ a)),
-             (Global "Cons", VLam_ (\ a -> VLam_ (\ n -> VLam_ (\ x -> VLam_ (\ xs ->
-                            VCons_ a n x xs))))),
-             (Global "Vec", VLam_ (\ a -> VLam_ (\ n -> VVec_ a n))),
-             (Global "vecElim", cEval_ (Lam_ (Lam_ (Lam_ (Lam_ (Lam_ (Lam_ (Inf_ (VecElim_ (Inf_ (Bound_ 5)) (Inf_ (Bound_ 4)) (Inf_ (Bound_ 3)) (Inf_ (Bound_ 2)) (Inf_ (Bound_ 1)) (Inf_ (Bound_ 0)))))))))) ([],[])),
-             (Global "Refl", VLam_ (\ a -> VLam_ (\ x -> VRefl_ a x))),
-             (Global "Eq", VLam_ (\ a -> VLam_ (\ x -> VLam_ (\ y -> VEq_ a x y)))),
-             (Global "eqElim", cEval_ (Lam_ (Lam_ (Lam_ (Lam_ (Lam_ (Lam_ (Inf_ (EqElim_ (Inf_ (Bound_ 5)) (Inf_ (Bound_ 4)) (Inf_ (Bound_ 3)) (Inf_ (Bound_ 2)) (Inf_ (Bound_ 1)) (Inf_ (Bound_ 0)))))))))) ([],[])),
-             (Global "FZero", VLam_ (\ n -> VFZero_ n)),
-             (Global "FSucc", VLam_ (\ n -> VLam_ (\ f -> VFSucc_ n f))),
-             (Global "Fin", VLam_ (\ n -> VFin_ n)),
-             (Global "finElim", cEval_ (Lam_ (Lam_ (Lam_ (Lam_ (Lam_ (Inf_ (FinElim_ (Inf_ (Bound_ 4)) (Inf_ (Bound_ 3)) (Inf_ (Bound_ 2)) (Inf_ (Bound_ 1)) (Inf_ (Bound_ 0))))))))) ([],[]))]
+lpve :: Ctx Value
+lpve =      [(Global "Zero", VZero),
+             (Global "Succ", VLam (\ n -> VSucc n)),
+             (Global "Nat", VNat),
+             (Global "natElim", cEval (Lam (Lam (Lam (Lam (Inf (NatElim (Inf (Bound 3)) (Inf (Bound 2)) (Inf (Bound 1)) (Inf (Bound 0)))))))) ([], [])),
+             (Global "Nil", VLam (\ a -> VNil a)),
+             (Global "Cons", VLam (\ a -> VLam (\ n -> VLam (\ x -> VLam (\ xs ->
+                            VCons a n x xs))))),
+             (Global "Vec", VLam (\ a -> VLam (\ n -> VVec a n))),
+             (Global "vecElim", cEval (Lam (Lam (Lam (Lam (Lam (Lam (Inf (VecElim (Inf (Bound 5)) (Inf (Bound 4)) (Inf (Bound 3)) (Inf (Bound 2)) (Inf (Bound 1)) (Inf (Bound 0)))))))))) ([],[])),
+             (Global "Refl", VLam (\ a -> VLam (\ x -> VRefl a x))),
+             (Global "Eq", VLam (\ a -> VLam (\ x -> VLam (\ y -> VEq a x y)))),
+             (Global "eqElim", cEval (Lam (Lam (Lam (Lam (Lam (Lam (Inf (EqElim (Inf (Bound 5)) (Inf (Bound 4)) (Inf (Bound 3)) (Inf (Bound 2)) (Inf (Bound 1)) (Inf (Bound 0)))))))))) ([],[])),
+             (Global "FZero", VLam (\ n -> VFZero n)),
+             (Global "FSucc", VLam (\ n -> VLam (\ f -> VFSucc n f))),
+             (Global "Fin", VLam (\ n -> VFin n)),
+             (Global "finElim", cEval (Lam (Lam (Lam (Lam (Lam (Inf (FinElim (Inf (Bound 4)) (Inf (Bound 3)) (Inf (Bound 2)) (Inf (Bound 1)) (Inf (Bound 0))))))))) ([],[]))]
 
 lpassume state@(inter, out, ve, te) x t =
   -- x: String, t: CTerm
-  check lp state x (Ann_ t (Inf_ Star_))
-        (\ (y, v) -> return ()) --  putStrLn (render (text x <> text " :: " <> cPrint_ 0 0 (quote0_ v))))
+  check lp state x (Ann t (Inf Star))
+        (\ (y, v) -> return ()) --  putStrLn (render (text x <> text " :: " <> cPrint 0 0 (quote0 v))))
         (\ (y, v) -> (inter, out, ve, (Global x, v) : te))
 
-lp :: Interpreter ITerm_ CTerm_ Value_ Value_ CTerm_ Value_
+lp :: Interpreter ITerm CTerm Value Value CTerm Value
 lp = I { iname = "lambda-Pi",
          iprompt = "LP> ",
-         iitype = \ v c -> iType_ 0 (v, c),
-         iquote = quote0_,
-         ieval = \ e x -> iEval_ x (e, []),
+         iitype = \ v c -> iType 0 (v, c),
+         iquote = quote0,
+         ieval = \ e x -> iEval x (e, []),
          ihastype = id,
-         icprint = cPrint_ 0 0,
-         itprint = cPrint_ 0 0 . quote0_,
-         iiparse = parseITerm_ 0 [],
-         isparse = parseStmt_ [],
+         icprint = cPrint 0 0,
+         itprint = cPrint 0 0 . quote0,
+         iiparse = parseITerm 0 [],
+         isparse = parseStmt [],
          iassume = \ s (x, t) -> lpassume s x t }
 
 repLP :: Bool -> IO ()
