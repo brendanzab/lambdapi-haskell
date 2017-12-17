@@ -4,9 +4,9 @@ import Prelude hiding (print)
 import Control.Monad.Except
 import Data.List
 import Data.Char
-import Text.PrettyPrint.HughesPJ hiding (parens)
+import Text.PrettyPrint.HughesPJ
 import qualified Text.PrettyPrint.HughesPJ as PP
-import Text.ParserCombinators.Parsec hiding (parse, State)
+import Text.ParserCombinators.Parsec hiding (State)
 import qualified Text.ParserCombinators.Parsec as P
 import Text.ParserCombinators.Parsec.Token
 import Text.ParserCombinators.Parsec.Language
@@ -53,7 +53,7 @@ helpTxt cs
      "let <var> = <expr>      define variable\n" ++
      "assume <var> :: <expr>  assume variable\n\n"
      ++
-     unlines (map (\ (Cmd cs a _ d) -> let  ct = concat (intersperse ", " (map (++ if null a then "" else " " ++ a) cs))
+     unlines (map (\ (Cmd cs a _ d) -> let  ct = intercalate ", " (map (++ if null a then "" else " " ++ a) cs)
                                        in   ct ++ replicate ((24 - length ct) `max` 2) ' ' ++ d) cs)
 
 commands :: [InteractiveCommand]
@@ -70,7 +70,7 @@ dummy = makeTokenParser (haskellStyle { identStart = letter <|> P.char '_',
 
 parseIO :: String -> CharParser () a -> String -> IO (Maybe a)
 parseIO f p x = case P.parse (whiteSpace dummy >> p >>= \ x -> eof >> return x) f x of
-                  Left e  -> putStrLn (show e) >> return Nothing
+                  Left e  -> print e >> return Nothing
                   Right r -> return (Just r)
 
 readevalprint :: Interpreter i c v t tinf inf -> State v inf -> IO ()
@@ -96,7 +96,7 @@ readevalprint int state@(inter, out, ve, te) =
 
 interpretCommand :: String -> IO Command
 interpretCommand x
-  =  if isPrefixOf ":" x then
+  =  if ":" `isPrefixOf` x then
        do  let  (cmd,t')  =  break isSpace x
                 t         =  dropWhile isSpace t'
            --  find matching commands
@@ -105,8 +105,8 @@ interpretCommand x
              []  ->  do  putStrLn ("Unknown command `" ++ cmd ++ "'. Type :? for help.")
                          return Noop
              [Cmd _ _ f _]
-                 ->  do  return (f t)
-             x   ->  do  putStrLn ("Ambiguous command, could be " ++ concat (intersperse ", " [ head cs | Cmd cs _ _ _ <- matching ]) ++ ".")
+                 ->  return (f t)
+             x   ->  do  putStrLn ("Ambiguous command, could be " ++ intercalate ", " [ head cs | Cmd cs _ _ _ <- matching ]) ++ "."
                          return Noop
      else
        return (Compile (CompileInteractive x))
@@ -114,13 +114,13 @@ interpretCommand x
 handleCommand :: Interpreter i c v t tinf inf -> State v inf -> Command -> IO (Maybe (State v inf))
 handleCommand int state@(inter, out, ve, te) cmd
   =  case cmd of
-       Quit   ->  when (not inter) (putStrLn "!@#$^&*") >> return Nothing
+       Quit   ->  unless inter (putStrLn "!@#$^&*") >> return Nothing
        Noop   ->  return (Just state)
        Help   ->  putStr (helpTxt commands) >> return (Just state)
        TypeOf x ->
                   do  x <- parseIO "<interactive>" (iiparse int) x
                       t <- maybe (return Nothing) (iinfer int ve te) x
-                      maybe (return ()) (\u -> putStrLn (render (itprint int u))) t
+                      maybe (return ()) (putStrLn . render . itprint int) t
                       return (Just state)
        Browse ->  do  putStr (unlines [ s | Global s <- reverse (nub (map fst te)) ])
                       return (Just state)
@@ -152,13 +152,12 @@ iinfer int d g t =
 handleStmt :: Interpreter i c v t tinf inf
               -> State v inf -> Stmt i tinf -> IO (State v inf)
 handleStmt int state@(inter, out, ve, te) stmt =
-  do
-    case stmt of
-        Assume ass -> foldM (iassume int) state ass
-        Let x e    -> checkEval x e
-        Eval e     -> checkEval it e
-        PutStrLn x -> putStrLn x >> return state
-        Out f      -> return (inter, f, ve, te)
+  case stmt of
+      Assume ass -> foldM (iassume int) state ass
+      Let x e    -> checkEval x e
+      Eval e     -> checkEval it e
+      PutStrLn x -> putStrLn x >> return state
+      Out f      -> return (inter, f, ve, te)
   where
     --  checkEval :: String -> i -> IO (State v inf)
     checkEval i t =
@@ -181,10 +180,7 @@ check int state@(inter, out, ve, te) i t kp k =
                   --  typecheck and evaluate
                   x <- iinfer int ve te t
                   case x of
-                    Nothing  ->
-                      do
-                        --  putStrLn "type error"
-                        return state
+                    Nothing  -> return state
                     Just y   ->
                       do
                         let v = ieval int ve t
