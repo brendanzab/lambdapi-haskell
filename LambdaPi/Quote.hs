@@ -34,7 +34,7 @@ neutralQuote :: Int -> Neutral -> ITerm
 neutralQuote ii (NFree v)
    =  boundfree ii v
 neutralQuote ii (NApp n v)
-   =  neutralQuote ii n :$: quote ii v
+   =  App (neutralQuote ii n) (quote ii v)
 neutralQuote ii (NNatElim m z s n)
    =  NatElim (quote ii m) (quote ii z) (quote ii s) (Inf (neutralQuote ii n))
 neutralQuote ii (NVecElim a m mn mc n xs)

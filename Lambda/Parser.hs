@@ -12,20 +12,20 @@ import Lambda.AST
 simplyTyped = makeTokenParser (haskellStyle { identStart = letter <|> P.char '_',
                                               reservedNames = ["let", "assume", "putStrLn"] })
 parseBindings :: CharParser () ([String], [Info])
-parseBindings = 
+parseBindings =
                    (let rec :: [String] -> [Info] -> CharParser () ([String], [Info])
                         rec e ts =
                           do
                            (x,t) <- parens simplyTyped
                                       (do
-                                         x <- identifier simplyTyped 
+                                         x <- identifier simplyTyped
                                          reserved simplyTyped "::"
                                          t <- pInfo
                                          return (x,t))
                            (rec (x : e) (t : ts) <|> return (x : e, t : ts))
                     in rec [] [])
                    <|>
-                   do  x <- identifier simplyTyped 
+                   do  x <- identifier simplyTyped
                        reserved simplyTyped "::"
                        t <- pInfo
                        return ([x], [t])
@@ -96,7 +96,7 @@ parseITerm 2 e =
       do
         t <- parseITerm 3 e
         ts <- many (parseCTerm 3 e)
-        return (foldl (:@:) t ts)
+        return (foldl App t ts)
 parseITerm 3 e =
       do
         x <- identifier simplyTyped

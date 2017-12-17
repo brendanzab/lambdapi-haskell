@@ -31,7 +31,7 @@ iType ii g (Free x)
   =     case lookup x (snd g) of
           Just ty        ->  return ty
           Nothing        ->  throwError ("unknown identifier: " ++ render (iPrint 0 0 (Free x)))
-iType ii g (e1 :$: e2)
+iType ii g (App e1 e2)
   =     do  si <- iType ii g e1
             case si of
               VPi  ty ty1  ->  do  cType ii g e2 ty
@@ -137,7 +137,7 @@ iSubst ii r  Star           =  Star
 iSubst ii r  (Pi ty ty')    =  Pi  (cSubst ii r ty) (cSubst (ii + 1) r ty')
 iSubst ii i' (Bound j)      =  if ii == j then i' else Bound j
 iSubst ii i' (Free y)       =  Free y
-iSubst ii i' (i :$: c)       =  (iSubst ii i' i) :$: (cSubst ii i' c)
+iSubst ii i' (App i c)       = App (iSubst ii i' i) (cSubst ii i' c)
 iSubst ii r  Nat            =  Nat
 iSubst ii r  (NatElim m mz ms n)
                               =  NatElim (cSubst ii r m)

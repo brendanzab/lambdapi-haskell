@@ -19,7 +19,7 @@ data ITerm
    |  Pi CTerm CTerm
    |  Bound  Int
    |  Free  Name
-   |  ITerm :$: CTerm
+   |  App ITerm CTerm
    |  Nat
    |  NatElim CTerm CTerm CTerm CTerm
    |  Vec CTerm CTerm

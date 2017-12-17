@@ -7,7 +7,7 @@ data ITerm
    =  Ann    CTerm Type
    |  Bound  Int
    |  Free   Name
-   |  ITerm :@: CTerm
+   |  App    ITerm CTerm
   deriving (Show, Eq)
 
 -- checkable term

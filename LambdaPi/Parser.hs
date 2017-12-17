@@ -92,7 +92,7 @@ parseITerm 2 e =
       do
         t <- parseITerm 3 e
         ts <- many (parseCTerm 3 e)
-        return (foldl (:$:) t ts)
+        return (foldl App t ts)
 parseITerm 3 e =
       do
         reserved lambdaPi "*"

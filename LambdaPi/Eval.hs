@@ -21,7 +21,7 @@ iEval Star           d  =  VStar
 iEval (Pi ty ty1)    d  =  VPi (cEval ty d) (\ x -> cEval ty1 (((\(e, d) -> (e,  (x : d))) d)))
 iEval (Free  x)      d  =  case lookup x (fst d) of Nothing ->  (vfree x); Just v -> v
 iEval (Bound  ii)    d  =  (snd d) !! ii
-iEval (i :$: c)       d  =  vapp (iEval i d) (cEval c d)
+iEval (App i c)       d  =  vapp (iEval i d) (cEval c d)
 iEval Nat                  d  =  VNat
 iEval (NatElim m mz ms n)  d
   =  let  mzVal = cEval mz d

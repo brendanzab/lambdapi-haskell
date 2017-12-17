@@ -26,7 +26,7 @@ iType ii g (Free x)
   =  case lookup x g of
        Just (HasType ty)  ->  return ty
        Nothing            ->  throwError "unknown identifier"
-iType ii g (e1 :@: e2)
+iType ii g (App e1 e2)
   =  do  si <- iType ii g e1
          case si of
            Fun ty ty'  ->  do  cType ii g e2 ty
@@ -47,7 +47,7 @@ iSubst :: Int -> ITerm -> ITerm -> ITerm
 iSubst ii r (Ann e ty)   =  Ann (cSubst ii r e) ty
 iSubst ii r (Bound j)    =  if ii == j then r else Bound j
 iSubst ii r (Free y)     =  Free y
-iSubst ii r (e1 :@: e2)  =  iSubst ii r e1 :@: cSubst ii r e2
+iSubst ii r (App e1 e2)  =  App (iSubst ii r e1) (cSubst ii r e2)
 
 cSubst :: Int -> ITerm -> CTerm -> CTerm
 cSubst ii r (Inf e)      =  Inf (iSubst ii r e)
