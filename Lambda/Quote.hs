@@ -13,6 +13,7 @@ quote ii (VNeutral n)  =  Inf (neutralQuote ii n)
 neutralQuote :: Int -> Neutral -> ITerm
 neutralQuote ii (NFree x)   =  boundfree ii x
 neutralQuote ii (NApp n v)  =  App (neutralQuote ii n) (quote ii v)
+
 boundfree :: Int -> Name -> ITerm
 boundfree ii (Quote k)     =  Bound (ii - k - 1)
 boundfree ii x             =  Free x

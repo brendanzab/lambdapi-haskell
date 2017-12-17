@@ -1,4 +1,4 @@
-module LambdaPi.Parser where
+module LambdaPiExt.Parser where
 
 import Data.List
 import Text.ParserCombinators.Parsec hiding (parse, State)
@@ -7,7 +7,7 @@ import Text.ParserCombinators.Parsec.Token
 import Text.ParserCombinators.Parsec.Language
 
 import Common
-import LambdaPi.AST
+import LambdaPiExt.AST
 
 lambdaPi = makeTokenParser (haskellStyle { identStart = letter <|> P.char '_',
                                            reservedNames = ["forall", "let", "assume", "putStrLn", "out"] })
@@ -34,6 +34,7 @@ parseStmt e =
         x <- option "" (stringLiteral lambdaPi)
         return (Out x)
   <|> fmap Eval (parseITerm 0 e)
+
 parseBindings :: Bool -> [String] -> CharParser () ([String], [CTerm])
 parseBindings b e =
                    (let rec :: [String] -> [CTerm] -> CharParser () ([String], [CTerm])
@@ -52,6 +53,7 @@ parseBindings b e =
                        reserved lambdaPi "::"
                        t <- parseCTerm 0 e
                        return (x : e, [t])
+
 parseITerm :: Int -> [String] -> CharParser () ITerm
 parseITerm 0 e =
       do
@@ -98,6 +100,9 @@ parseITerm 3 e =
         reserved lambdaPi "*"
         return Star
   <|> do
+        n <- natural lambdaPi
+        return (toNat n)
+  <|> do
         x <- identifier lambdaPi
         case findIndex (== x) e of
           Just n  -> return (Bound n)
@@ -120,3 +125,10 @@ parseLam e =
          t <- parseCTerm 0 (reverse xs ++ e)
          --  reserved lambdaPi "."
          return (iterate Lam t !! length xs)
+
+toNat :: Integer -> ITerm
+toNat n = Ann (toNat' n) (Inf Nat)
+
+toNat' :: Integer -> CTerm
+toNat' 0  =  Zero
+toNat' n  =  Succ (toNat' (n - 1))
