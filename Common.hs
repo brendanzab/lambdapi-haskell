@@ -9,11 +9,6 @@ data Name
    |  Quote   Int
   deriving (Show, Eq)
 
-data Type
-   =  TFree  Name
-   |  Fun    Type Type
-  deriving (Show, Eq) 
-
 type Result a = Either String a
 type NameEnv v = [(Name, v)]
 

@@ -12,7 +12,7 @@ data ITerm
 
 -- checkable term
 data CTerm
-   =  Inf  ITerm 
+   =  Inf  ITerm
    |  Lam  CTerm
   deriving (Show, Eq)
 
@@ -23,12 +23,17 @@ data Neutral
    =  NFree  Name
    |  NApp   Neutral Value
 
+data Type
+   =  TFree  Name
+   |  Fun    Type Type
+  deriving (Show, Eq)
+
 data Kind = Star
   deriving (Show)
 
 data Info
    =  HasKind  Kind
-   |  HasType  Type 
+   |  HasType  Type
   deriving (Show)
 
 type Context = [(Name, Info)]
