@@ -10,7 +10,7 @@ import Text.ParserCombinators.Parsec hiding (parse, State)
 import qualified Text.ParserCombinators.Parsec as P
 import Text.ParserCombinators.Parsec.Token
 import Text.ParserCombinators.Parsec.Language
-import System.Console.Readline
+import System.Console.Haskeline (InputT, runInputT, defaultSettings, getInputLine)
 import System.IO hiding (print)
 import System.IO.Error
 
@@ -23,7 +23,7 @@ data Command = TypeOf String
              | Quit
              | Help
              | Noop
- 
+
 data CompileForm = CompileInteractive  String
                  | CompileFile         String
 
@@ -75,29 +75,24 @@ parseIO f p x = case P.parse (whiteSpace dummy >> p >>= \ x -> eof >> return x) 
 
 readevalprint :: Interpreter i c v t tinf inf -> State v inf -> IO ()
 readevalprint int state@(inter, out, ve, te) =
-  let rec int state =
-        do
-          x <- catchIOError
-                 (if inter
-                  then readline (iprompt int) 
-                  else fmap Just getLine)
-                 (\_ -> return Nothing)
-          case x of
+  do
+    --  welcome
+    when inter $ putStrLn ("Interpreter for " ++ iname int ++ ".\n" ++ "Type :? for help.")
+    --  enter loop
+    runInputT defaultSettings (loop int state)
+
+  where
+    loop :: Interpreter i c v t tinf inf -> State v inf -> InputT IO ()
+    loop int state = do
+          minput <- getInputLine (iprompt int)
+          case minput of
             Nothing   ->  return ()
-            Just ""   ->  rec int state
-            Just x    ->
+            Just ""   ->  loop int state
+            Just input ->
               do
-                when inter (addHistory x)
-                c  <- interpretCommand x
-                state' <- handleCommand int state c
-                maybe (return ()) (rec int) state'
-  in
-    do
-      --  welcome
-      when inter $ putStrLn ("Interpreter for " ++ iname int ++ ".\n" ++
-                             "Type :? for help.")
-      --  enter loop
-      rec int state
+                c  <- lift $ interpretCommand input
+                state' <- lift $ handleCommand int state c
+                maybe (return ()) (loop int) state'
 
 interpretCommand :: String -> IO Command
 interpretCommand x
@@ -134,7 +129,7 @@ handleCommand int state@(inter, out, ve, te) cmd
                                  CompileInteractive s -> compilePhrase int state s
                                  CompileFile f        -> compileFile int state f
                       return (Just state)
- 
+
 compileFile :: Interpreter i c v t tinf inf -> State v inf -> String -> IO (State v inf)
 compileFile int state@(inter, out, ve, te) f =
   do
@@ -148,18 +143,18 @@ compilePhrase int state@(inter, out, ve, te) x =
     x <- parseIO "<interactive>" (isparse int) x
     maybe (return state) (handleStmt int state) x
 
- 
+
 iinfer int d g t =
   case iitype int d g t of
     Left e -> putStrLn e >> return Nothing
     Right v -> return (Just v)
- 
+
 handleStmt :: Interpreter i c v t tinf inf
               -> State v inf -> Stmt i tinf -> IO (State v inf)
 handleStmt int state@(inter, out, ve, te) stmt =
   do
     case stmt of
-        Assume ass -> foldM (iassume int) state ass 
+        Assume ass -> foldM (iassume int) state ass
         Let x e    -> checkEval x e
         Eval e     -> checkEval it e
         PutStrLn x -> putStrLn x >> return state
@@ -177,7 +172,7 @@ handleStmt int state@(inter, out, ve, te) stmt =
                        putStrLn outtext
                        unless (null out) (writeFile out (process outtext)))
         (\ (y, v) -> (inter, "", (Global i, v) : ve, (Global i, ihastype int y) : te))
- 
+
 check :: Interpreter i c v t tinf inf -> State v inf -> String -> i
          -> ((t, v) -> IO ()) -> ((t, v) -> State v inf) -> IO (State v inf)
 check int state@(inter, out, ve, te) i t kp k =
