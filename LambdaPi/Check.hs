@@ -35,8 +35,8 @@ iType ii g (App e1 e2)
   =     do  si <- iType ii g e1
             case si of
               VPi  ty ty1  ->  do  cType ii g e2 ty
-                                    return ( ty1 (cEval e2 (fst g, [])))
-              _                  ->  throwError "illegal application"
+                                   return ( ty1 (cEval e2 (fst g, [])))
+              _            ->  throwError "illegal application"
 iType ii g Nat                  =  return VStar
 iType ii g (NatElim m mz ms n)  =
   do  cType ii g m (VPi VNat (const VStar))
