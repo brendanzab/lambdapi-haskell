@@ -9,8 +9,10 @@ import Text.ParserCombinators.Parsec.Language
 import Common
 import LambdaPi.AST
 
-lambdaPi = makeTokenParser (haskellStyle { identStart = letter <|> P.char '_',
-                                           reservedNames = ["forall", "let", "assume", "putStrLn", "out"] })
+lambdaPi =
+  makeTokenParser (haskellStyle { identStart = letter <|> P.char '_'
+                                , reservedNames = ["forall", "let", "assume", "putStrLn", "out"]
+                                })
 
 
 parseStmt :: [String] -> CharParser () (Stmt ITerm CTerm)
